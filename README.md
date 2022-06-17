@@ -2,6 +2,32 @@
 
 `gr-dog` is Git Repository Collecting Dog.
 
+## Development
+
+### Run script
+
+```bash
+deno run --allow-read --allow-net ./src/main.ts ${args}
+```
+
+### Compile executable
+
+Usualy, you can use script for compilation.
+
+```bash
+# Compile
+./compile-bin.sh
+
+# Run
+./bin/gr-dog
+```
+
+Command is below.
+
+```bash
+deno compile --allow-read --allow-net --unstable -o ./bin/gr-dog ./src/main.ts
+```
+
 ## Run Test
 
 ```bash
@@ -32,9 +58,8 @@ PROJECT_ID=29596866
 curl -H "PRIVATE-TOKEN: $(TOKEN)" "https://gitlab.com/api/v4/projects/$(PROJECT_ID)/repository/commits" | jq .
 ```
 
-
 ## How to use API
 
 - About GitHub: [GitHub API Docs](https://docs.github.com/en/rest)
-- About GitLab: [GitLab API Docs](https://docs.gitlab.com/ee/api/api_resources.html)
-
+- About GitLab:
+  [GitLab API Docs](https://docs.gitlab.com/ee/api/api_resources.html)
