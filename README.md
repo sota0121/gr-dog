@@ -5,6 +5,23 @@
 ## Run Test
 
 ```bash
+# ----------------------------------------------------
+# retrieve all repositories that a user is a member of
+# ----------------------------------------------------
+# curl on gh (with user name)
+USER=$user_name # your user name.
+curl -H "Authorization: token ${TOKEN}" https://api.github.com/users/${USER}/repos
+
+# [optional] curl on gh (with org name)
+ORG=$org_name # your organization name. not your user name.
+curl -H "Authorization: token ${TOKEN}" https://api.github.com/orgs/${ORG}/repos
+
+# curl on glab
+curl -H "PRIVATE-TOKEN: $(TOKEN)" "https://gitlab.com/api/v4/projects/?membership=True" | jq .
+
+# ----------------------------------------------------
+# retrieve some commits from a specific repository
+# ----------------------------------------------------
 # curl on gh
 OWNER=sota0121
 REPO=lab
@@ -14,4 +31,10 @@ curl -H "Authorization: token $(TOKEN)" https://api.github.com/repos/$(OWNER)/$(
 PROJECT_ID=29596866
 curl -H "PRIVATE-TOKEN: $(TOKEN)" "https://gitlab.com/api/v4/projects/$(PROJECT_ID)/repository/commits" | jq .
 ```
+
+
+## How to use API
+
+- About GitHub: [GitHub API Docs](https://docs.github.com/en/rest)
+- About GitLab: [GitLab API Docs](https://docs.gitlab.com/ee/api/api_resources.html)
 
