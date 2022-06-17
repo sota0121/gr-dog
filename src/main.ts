@@ -1,1 +1,3 @@
-console.log("Hello gr-dog!");
+const main = () => {
+  console.log("Hello gr-dog!");
+};
