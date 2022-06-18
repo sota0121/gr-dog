@@ -6,11 +6,11 @@ export class Crawler {
   private ghToken: string = "";
   private ghUser: string = "github-user";
   private ghOrgsForUser: GithubOrg[] = [];
-  private ghReposForUser: GithubRepo[] = []; // only names of repos not the response object
-  private ghCommits: string[] = [];
+  private ghReposForUser: GithubRepo[] = [];
+  private ghCommits: GithubCommit[] = [];
   private glabToken: string = "";
   private glabUser: string = "gitlab-user";
-  private glabReposForUser: string[] = []; // only names of repos not the response object
+  private glabReposForUser: string[] = [];
 
   constructor(envFilePath: string) {
     console.log(`envFilePath: ${envFilePath}`);
@@ -43,6 +43,11 @@ export class Crawler {
     this.ghOrgsForUser.forEach(async (org) => {
       await this.retrieveGithubReposForOrg(org.login);
     });
+    this.ghReposForUser.forEach(async (repo) => {
+      console.log(`repo: ${repo.owner.login} / ${repo.name}`);
+      await this.retrieveGithubCommitsForRepo(repo);
+    });
+
     // ---
     // check results
     this.ghOrgsForUser.forEach((org) => {
@@ -51,12 +56,24 @@ export class Crawler {
     this.ghReposForUser.forEach((repo) => {
       console.log(`repo: ${repo.name} / owner: ${repo.owner.login}`);
     });
+    this.ghCommits.forEach((commit) => {
+      console.log(
+        `commit-author: ${commit.ctx.author} / commit-message: ${commit.ctx.message}`,
+      );
+    });
   }
 
   private async retrieveGithubReposForOrg(org: string): Promise<void> {
     const url = `https://api.github.com/orgs/${org}/repos`;
     const response = await fetch(url);
     const json = await response.json();
+
+    // maybe rate limit?
+    if (json?.message != "") {
+      console.log(`${json.message}`);
+      return;
+    }
+
     json.forEach((element) => {
       const repo: GithubRepo = {
         ...element,
@@ -69,6 +86,13 @@ export class Crawler {
     const url = `https://api.github.com/users/${user}/orgs`;
     const response = await fetch(url);
     const json = await response.json();
+
+    // maybe rate limit?
+    if (json?.message != "") {
+      console.log(`${json.message}`);
+      return;
+    }
+
     json.forEach((element) => {
       const org: GithubOrg = {
         ...element,
@@ -83,6 +107,13 @@ export class Crawler {
     const url = `https://api.github.com/users/${user}/repos`;
     const response = await fetch(url);
     const json = await response.json();
+
+    // maybe rate limit?
+    if (json?.message != "") {
+      console.log(`${json.message}`);
+      return;
+    }
+
     json.forEach((element) => {
       const repo: GithubRepo = {
         ...element,
@@ -91,11 +122,24 @@ export class Crawler {
     });
   }
 
-  private async retrieveGithubCommitsForRepo(): Promise<void> {
-    // ==============================================
-    // Get github commits for repo
-    // ==============================================
-    const url = "";
+  private async retrieveGithubCommitsForRepo(repo: GithubRepo): Promise<void> {
+    const url =
+      `https://api.github.com/repos/${repo.owner.login}/${repo.name}/commits`;
+    const response = await fetch(url);
+    const json = await response.json();
+
+    // maybe rate limit?
+    if (json?.message != "") {
+      console.log(`${json.message}`);
+      return;
+    }
+
+    json.forEach((element) => {
+      const commit: GithubCommit = {
+        ...element,
+      };
+      this.ghCommits.push(commit);
+    });
   }
 }
 
