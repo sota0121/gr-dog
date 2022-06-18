@@ -1,10 +1,4 @@
-import { App, Octokit } from "https://cdn.skypack.dev/octokit?dts";
-
-const octokit: Octokit = new Octokit({
-  auth: "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",
-});
-const { data: { login } } = await octokit.rest.users.getAuthenticated();
-console.log(`Hello ${login}`);
+import { Crawler } from "./crawler.ts";
 
 function main(): void {
   console.log("=== start gr-dog ===\n");
@@ -38,4 +32,9 @@ async function fetchGitHubReposForUser(user: string): Promise<void> {
 }
 
 // Entry point
-main();
+// main();
+
+const crawler = new Crawler("./.env");
+console.log(crawler.getGhUser());
+console.log(crawler.getGlabUser());
+crawler.execCrawling("2020-01-01", "2020-01-02");

@@ -1,6 +1,11 @@
 import * as dotenv from "https://deno.land/x/dotenv@v3.2.0/mod.ts";
 
-import { GithubCommit, GithubOrg, GithubRepo } from "./models/api.ts";
+import {
+  GithubCommit,
+  GithubOrg,
+  GithubRepo,
+  isErrGhResponse,
+} from "./models/api.ts";
 
 export class Crawler {
   private ghToken: string = "";
@@ -38,14 +43,19 @@ export class Crawler {
     // ==============================================
     // Get github test
     // ==============================================
-    await this.retrieveGithubOrgsForUser(this.ghUser);
+    // await this.retrieveGithubOrgsForUser(this.ghUser);
     await this.retrieveGithubReposForUser(this.ghUser);
-    this.ghOrgsForUser.forEach(async (org) => {
-      await this.retrieveGithubReposForOrg(org.login);
-    });
-    this.ghReposForUser.forEach(async (repo) => {
+    // this.ghOrgsForUser.forEach(async (org) => {
+    //   await this.retrieveGithubReposForOrg(org.login);
+    // });
+    this.ghReposForUser.forEach(async (repo, index) => {
       console.log(`repo: ${repo.owner.login} / ${repo.name}`);
-      await this.retrieveGithubCommitsForRepo(repo);
+      // execute only one repo because of rate limit
+      if (index == 0) {
+        await this.retrieveGithubCommitsForRepo(repo);
+      } else {
+        console.log(`skip repo: ${repo.owner.login} / ${repo.name}`);
+      }
     });
 
     // ---
@@ -69,7 +79,7 @@ export class Crawler {
     const json = await response.json();
 
     // maybe rate limit?
-    if (json?.message != "") {
+    if (isErrGhResponse(json)) {
       console.log(`${json.message}`);
       return;
     }
@@ -88,7 +98,7 @@ export class Crawler {
     const json = await response.json();
 
     // maybe rate limit?
-    if (json?.message != "") {
+    if (isErrGhResponse(json)) {
       console.log(`${json.message}`);
       return;
     }
@@ -109,7 +119,7 @@ export class Crawler {
     const json = await response.json();
 
     // maybe rate limit?
-    if (json?.message != "") {
+    if (isErrGhResponse(json)) {
       console.log(`${json.message}`);
       return;
     }
@@ -129,7 +139,7 @@ export class Crawler {
     const json = await response.json();
 
     // maybe rate limit?
-    if (json?.message != "") {
+    if (isErrGhResponse(json)) {
       console.log(`${json.message}`);
       return;
     }
@@ -142,8 +152,3 @@ export class Crawler {
     });
   }
 }
-
-const crawler = new Crawler("./.env");
-console.log(crawler.getGhUser());
-console.log(crawler.getGlabUser());
-crawler.execCrawling("2020-01-01", "2020-01-02");
