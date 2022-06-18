@@ -1,4 +1,5 @@
 import { Crawler } from "./crawler.ts";
+import { GithubCommit, GithubOrg } from "./models/api.ts";
 
 function main(): void {
   console.log("=== start gr-dog ===\n");
@@ -37,4 +38,19 @@ async function fetchGitHubReposForUser(user: string): Promise<void> {
 const crawler = new Crawler("./.env");
 console.log(crawler.getGhUser());
 console.log(crawler.getGlabUser());
-crawler.execCrawling("2020-01-01", "2020-01-02");
+await crawler.execCrawling("2020-01-01", "2020-01-02");
+
+// ---
+// check results
+const ghOrgsForUser: GithubOrg[] = crawler.getOrgs();
+ghOrgsForUser.forEach((org) => {
+  console.log(`org: ${org.login}`);
+});
+
+const ghCommits: GithubCommit[] = crawler.getCommits();
+console.log(`commits: ${ghCommits.length}`);
+ghCommits.forEach((commit) => {
+  console.log(
+    `commit-author-name: ${commit.commit.author.name} / commit-message: ${commit.commit.message}`,
+  );
+});

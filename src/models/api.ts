@@ -41,5 +41,5 @@ export interface GithubCommit {
   sha: string;
   url: string;
   html_url: string;
-  ctx: GithubCommitCtx;
+  commit: GithubCommitCtx;
 }

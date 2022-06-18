@@ -28,6 +28,9 @@ export class Crawler {
     this.glabToken = envObj.GITLAB_PRIVATE_TOKEN;
   }
 
+  // ==============================================
+  // Public methods
+  // ==============================================
   public getGhUser(): string {
     return this.ghUser;
   }
@@ -36,10 +39,25 @@ export class Crawler {
     return this.glabUser;
   }
 
+  public getOrgs(): GithubOrg[] {
+    return this.ghOrgsForUser;
+  }
+
+  public getCommits(): GithubCommit[] {
+    return this.ghCommits;
+  }
+
+  /**
+   * @param since string - date string (YYYY-MM-DD)
+   * @param until string - date string (YYYY-MM-DD)
+   * @returns Promise<void>
+   * @description Crawling main function
+   */
   public async execCrawling(since: string, until: string): Promise<void> {
     console.log(`since: ${since}`);
     console.log(`until: ${until}`);
     console.log("future these are parsed as dates");
+    console.log("===================================");
     // ==============================================
     // Get github test
     // ==============================================
@@ -48,31 +66,38 @@ export class Crawler {
     // this.ghOrgsForUser.forEach(async (org) => {
     //   await this.retrieveGithubReposForOrg(org.login);
     // });
-    this.ghReposForUser.forEach(async (repo, index) => {
-      console.log(`repo: ${repo.owner.login} / ${repo.name}`);
-      // execute only one repo because of rate limit
-      if (index == 0) {
-        await this.retrieveGithubCommitsForRepo(repo);
-      } else {
+    for (const [index, repo] of this.ghReposForUser.entries()) {
+      // minimal test because of rate limit
+      if (index > 0) {
         console.log(`skip repo: ${repo.owner.login} / ${repo.name}`);
+      } else {
+        console.log(`retrieved repo: ${repo.owner.login} / ${repo.name}`);
+        await this.retrieveGithubCommitsForRepo(repo);
       }
-    });
-
-    // ---
-    // check results
-    this.ghOrgsForUser.forEach((org) => {
-      console.log(`org: ${org.login}`);
-    });
-    this.ghReposForUser.forEach((repo) => {
-      console.log(`repo: ${repo.name} / owner: ${repo.owner.login}`);
-    });
-    this.ghCommits.forEach((commit) => {
-      console.log(
-        `commit-author: ${commit.ctx.author} / commit-message: ${commit.ctx.message}`,
-      );
-    });
+    }
+    // this.ghReposForUser.forEach(async (repo, index) => {
+    //   // execute only one repo because of rate limit
+    //   if (index == 0) {
+    //     console.log(`retrieved repo: ${repo.owner.login} / ${repo.name}`);
+    //     await this.retrieveGithubCommitsForRepo(repo);
+    //   } else {
+    //     console.log(`skip repo: ${repo.owner.login} / ${repo.name}`);
+    //   }
+    // });
+    // ==============================================
+    // Get gitlab test
+    console.log("GitLab test (TBD)");
+    // ==============================================
   }
 
+  // ==============================================
+  // Private methods
+  // ==============================================
+  /**
+   * @param org GithubOrg
+   * @returns Promise<void>
+   * @description Retrieve github repos for a org
+   */
   private async retrieveGithubReposForOrg(org: string): Promise<void> {
     const url = `https://api.github.com/orgs/${org}/repos`;
     const response = await fetch(url);
@@ -92,6 +117,11 @@ export class Crawler {
     });
   }
 
+  /**
+   * @param user string
+   * @returns Promise<void>
+   * @description Retrieve github orgs for a user
+   */
   private async retrieveGithubOrgsForUser(user: string): Promise<void> {
     const url = `https://api.github.com/users/${user}/orgs`;
     const response = await fetch(url);
@@ -111,6 +141,11 @@ export class Crawler {
     });
   }
 
+  /**
+   * @param user string
+   * @returns Promise<void>
+   * @description Retrieve gitlab repos for a user
+   */
   private async retrieveGithubReposForUser(
     user: string,
   ): Promise<void> {
@@ -132,6 +167,11 @@ export class Crawler {
     });
   }
 
+  /**
+   * @param repo GithubRepo
+   * @returns Promise<void>
+   * @description Retrieve github commits for a repo
+   */
   private async retrieveGithubCommitsForRepo(repo: GithubRepo): Promise<void> {
     const url =
       `https://api.github.com/repos/${repo.owner.login}/${repo.name}/commits`;
