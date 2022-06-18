@@ -1,3 +1,11 @@
+import { App, Octokit } from "https://cdn.skypack.dev/octokit?dts";
+
+const octokit: Octokit = new Octokit({
+  auth: "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",
+});
+const { data: { login } } = await octokit.rest.users.getAuthenticated();
+console.log(`Hello ${login}`);
+
 function main(): void {
   console.log("=== start gr-dog ===\n");
   const args = Deno.args;
@@ -21,6 +29,12 @@ function parseArgs(args: string[]): number {
     args.map((arg: string): void => console.log(arg));
     return 0;
   }
+}
+
+async function fetchGitHubReposForUser(user: string): Promise<void> {
+  const url = `https://api.github.com/users/${user}/repos`;
+  const response = await fetch(url);
+  const json = response.json();
 }
 
 // Entry point
