@@ -4,6 +4,10 @@
 
 - [Create An Advanced CLI — With TypeScript](https://levelup.gitconnected.com/create-your-own-advanced-cli-with-typescript-5868ae3df397)
   - for directory structure and script structure
+- For CLI Arguments parsing
+  - [Deno Args | GitHub](https://github.com/KSXGitHub/deno-args)
+  - [Deno Args / examples](https://github.com/KSXGitHub/deno-args/tree/master/examples)
+  - [Deno Args Examples on Sample App](https://github.com/KSXGitHub/deno_run_tests_on_localhost/blob/0.2.2/cli.ts)
 
 
 ## Memo

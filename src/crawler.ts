@@ -17,6 +17,9 @@ export class Crawler {
   private glabUser: string = "gitlab-user";
   private glabReposForUser: string[] = [];
 
+  // constants for github api
+  private readonly perPageMax: number = 100;
+
   constructor(envFilePath: string) {
     console.log(`envFilePath: ${envFilePath}`);
     // Load env file
@@ -50,14 +53,46 @@ export class Crawler {
   /**
    * @param since string - date string (YYYY-MM-DD)
    * @param until string - date string (YYYY-MM-DD)
+   * @param nrepos int - number of repos to retrieve
+   * @param ncommits int - number of commits to retrieve
    * @returns Promise<void>
    * @description Crawling main function
    */
-  public async execCrawling(since: string, until: string): Promise<void> {
-    console.log(`since: ${since}`);
-    console.log(`until: ${until}`);
-    console.log("future these are parsed as dates");
+  public async execCrawling(
+    since: string = "",
+    until: string = "",
+    nrepos: number = 0,
+    ncommits: number = 0,
+  ): Promise<void> {
+    console.log(`since: ${since} - until: ${until} (future: datestring)`);
+    console.log(`nrepos: ${nrepos} / ncommits: ${ncommits}`);
     console.log("===================================");
+
+    // ==============================================
+    // Set up properties
+    // ==============================================
+    const reposUnlimit: boolean = nrepos === 0;
+
+    // ==============================================
+    // Crawler for github
+    // ==============================================
+    // Retrieve github orgs for user
+    await this.retrieveGithubOrgsForUser(this.ghUser);
+
+    // Retrieve github repos for user
+    await this.retrieveGithubReposForUser(this.ghUser);
+
+    // Retrieve github commits for repos
+    for (const [index, repo] of this.ghReposForUser.entries()) {
+      if (reposUnlimit || index < nrepos) {
+        console.log(`retrieved repo: ${repo.owner.login} / ${repo.name}`);
+        await this.retrieveGithubCommitsForRepo(repo, ncommits);
+      } else {
+        console.log(`skip repo: ${repo.owner.login} / ${repo.name}`);
+        break;
+      }
+    }
+
     // ==============================================
     // Get github test
     // ==============================================
@@ -66,15 +101,7 @@ export class Crawler {
     // this.ghOrgsForUser.forEach(async (org) => {
     //   await this.retrieveGithubReposForOrg(org.login);
     // });
-    for (const [index, repo] of this.ghReposForUser.entries()) {
-      // minimal test because of rate limit
-      if (index > 0) {
-        console.log(`skip repo: ${repo.owner.login} / ${repo.name}`);
-      } else {
-        console.log(`retrieved repo: ${repo.owner.login} / ${repo.name}`);
-        await this.retrieveGithubCommitsForRepo(repo);
-      }
-    }
+
     // this.ghReposForUser.forEach(async (repo, index) => {
     //   // execute only one repo because of rate limit
     //   if (index == 0) {
@@ -172,9 +199,20 @@ export class Crawler {
    * @returns Promise<void>
    * @description Retrieve github commits for a repo
    */
-  private async retrieveGithubCommitsForRepo(repo: GithubRepo): Promise<void> {
+  private async retrieveGithubCommitsForRepo(
+    repo: GithubRepo,
+    ncommits: number = 0,
+  ): Promise<void> {
+    // set properties
+    const commitsUnlimit: boolean = ncommits === 0;
+    const perPage: number = (commitsUnlimit || this.perPageMax < ncommits)
+      ? this.perPageMax
+      : ncommits;
+    const page: number = 1; // [pend]
+
+    // send request
     const url =
-      `https://api.github.com/repos/${repo.owner.login}/${repo.name}/commits`;
+      `https://api.github.com/repos/${repo.owner.login}/${repo.name}/commits?per_page=${perPage}&page=${page}`;
     const response = await fetch(url);
     const json = await response.json();
 
